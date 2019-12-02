@@ -354,8 +354,10 @@ int precedence(int op) {
    else return 3;
 }
 int postfix(char *dst, char *src) {
-   int count =0, max =0;
+   // operator 다음에 '-' 면 다음 숫자가 operator
+   int count =0, max =0, op;
    init_stack();
+   if(*src++ == '-') *dst++ = '-';    // 맨 처음 input이 '-'면 음수로 처리
    while (*src) {
       if (*src == '(') {
          push(*src);
@@ -370,13 +372,17 @@ int postfix(char *dst, char *src) {
          src++;
       }
       else if (is_operator(*src)) {
-         while (!is_empty() &&
-            precedence(get_top()) >= precedence(*src)) {
-            *dst++ = pop();
-            *dst++ = ' ';
+         op = *src;
+         while(isblank(*src)) src++;
+         if(*src++ == '-') *dst++ = '-';
+         else{
+            while (!is_empty() &&
+               precedence(get_top()) >= precedence(op)) {
+                  *dst++ = pop();
+                  *dst++ = ' ';
+            }
+         push(op);
          }
-         push(*src);
-         src++;
       }
       else if (*src >= '0' && *src <= '9' || *src == '.') {
          do {
