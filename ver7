@@ -2,6 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 #define print printf
+#define STDOUT 1
+#include<ctype.h>
+#include<sys/types.h>
+#include<sys/stat.h>
+#include<fcntl.h>
+#include<unistd.h>
 const int CALLOCSIZE = 200;  // 동적 할당시 임시로 사용할 사이즈. 코드 완성 후엔 각 선언마다 적절한 lenth로 계산해서 사용할 것
 void find_operator(char*);
 int find_dot(char*);
@@ -27,7 +33,20 @@ int B_negtive = 0;
 int first_negative = 0;  // 첫 숫자가 음수일 경우 1, default 0
 //int A_bigger_abs = 0;  // 첫 숫자 A가 음수이며 덧셈할 B보다 값이 더 클 경우 1, default 0
 int multiply_decimal = 0;  // 소수가 있는 수의 곱셈시 1, default 0
+void init_stack() { top = -1; }
+int push(int t);
+int pop();
+int get_top() { return (top < 0) ? -1 : stack[top]; }
+int is_empty() { return (top < 0); }
+int is_operator(int k) { return (k == '+' || k == '-' || k == '*' || k == '/'); }
+int is_legal(char *s); // 후위표기법 수식이 적접한가 체크
+int precedence(int op); // 연산자의 우선순위를 수치로 변환해준다.
+int postfix(char *dst, char*src);// 중위표기법을 후위표기법으로 변환
+void calc(char *p, int len); //후위표기법 계산
 // end definition
+
+int top, size;
+int *stack;
 
 int main() {
 //    char input[] = "";
@@ -879,3 +898,192 @@ void find_operator(char* input) {
         }  // end if
     }  // end for
 }  // end find_operator
+int push(int t) {
+   if (top >= size - 1) {
+      printf("\nStack overflow.");
+      return -1;
+   }
+   stack[++top] = t;
+   return t;
+}
+int pop() {
+   if (top < 0) {
+      printf("\nStack underflow.");
+      return -1;
+   }
+   return stack[top--];
+}
+int is_legal(char *s) {
+   int f = 0;
+   while (*s) {
+      // 처음 공백 넘어가기
+      while (isspace(*s)) {
+         s++;
+      }
+
+      if (is_operator(*s)) {
+         f--;
+      }
+      else {
+         if (!isdigit(*s) || !(*s) == '.') {
+            return 0;
+         }
+         f++;
+         while (!isspace(*s)) {
+            s++;
+         }
+      }
+      if (f < 1) break;
+      s++;
+   }
+   return (f == 1);
+}
+int precedence(int op) {
+   if (op == '(') return 0;
+   if (op == '+' || op == '-') return 1;
+   if (op == '*' || op == '/') return 2;
+   else return 3;
+}
+int postfix(char *dst, char *src) {
+   // operator 다음에 '-' 면 다음 숫자가 operator
+   int count =0, max =0, op;
+   init_stack();
+   if(*src == '-') {
+      *dst++ = '-';    // 맨 처음 input이 '-'면 음수로 처리
+      src++;
+   }
+   while (*src) {
+      if (*src == '(') {
+         push(*src);
+         src++;
+      }
+      else if (*src == ')') {
+         while (get_top() != '(') {
+            *dst++ = pop();
+            *dst++ = ' ';
+         }
+         pop();
+         src++;
+      }
+      else if (is_operator(*src)) {
+         op = *src;
+         while(isblank(*src)) src++;
+         if(*src++ == '-') *dst++ = '-';
+         else{
+            while (!is_empty() &&
+               precedence(get_top()) >= precedence(op)) {
+                  *dst++ = pop();
+                  *dst++ = ' ';
+            }
+         push(op);
+         }
+      }
+      else if (*src >= '0' && *src <= '9' || *src == '.') {
+         do {
+            *dst++ = *src++;
+            count++;
+         } while (*src >= '0' && *src <= '9' || *src == '.');
+         if(count > max) max = count;
+         count =0;
+         *dst++ = ' ';
+      }
+      else {
+         src++;
+      }
+   }
+   while (!is_empty()) {
+      *dst++ = pop();
+      *dst++ = ' ';
+   }
+   dst--;
+   *dst = 0;
+   return max;
+}
+void calc(char *p, int len) {
+   printf("len = %d\n",len);
+   //int i; out과 비슷함
+   //init_stack();
+   A = malloc(sizeof(char)*len + 1);
+   B = malloc(len + 1);
+   result = malloc(len + 1);
+   memset(A, 0, len+1);
+   memset(B, 0, len+1);
+   memset(result, 0, (2*len)+1);
+   printf("p = %s\n",p);
+   printf("A = %c\n",*A);
+   int i=0;
+   while (*p) {
+      if (*p >= '0' && *p <= '9' || *p == '.') {
+         do {
+            if(A[i] == 0){
+               //printf("*p = %c\n",*p);
+               A[i++] = *p++;
+               //printf("A = %s\n",A);
+            }
+            else{
+               //printf("*p = %c\n",*p);
+               B[i++] = *p++;
+               //printf("B = %s\n",B);
+            }
+         } while (*p >= '0' && *p <= '9' || *p == '.');
+      }
+      else if (*p == '+') {
+         //push(pop() + pop());
+         A = fillZeroInt(B, A);
+         B = fillZeroInt(A, B);
+         A = fillZeroDec(B, A);
+         B = fillZeroDec(A, B);
+         result = calPlus(A,B);
+         printf("A = %s\n",A);
+         printf("B = %s\n",B);
+         printf("result = %s\n",result);
+         A = result;
+         memset(B, 0, len +1);
+         p++;
+      }
+      // else if (*p == '*') {
+      //    //push(pop() * pop());
+      //    A = fillZeroInt(B, A);
+      //    B = fillZeroInt(A, B);
+      //    A = fillZeroDec(B, A);
+      //    B = fillZeroDec(A, B);
+      //    result = calMul(A,B);
+      //    printf("A = %s\n",A);
+      //    printf("B = %s\n",B);
+      //    printf("result = %s\n",result);
+      //    A = result;
+      //    memset(B, 0, len+1);
+      //    memset(result, 0, len+1);
+      //    p++;
+      // }
+      // else if (*p == '-') {
+      //    // i = pop();
+      //    // push(pop() - i);
+      //    A = fillZeroInt(B, A);
+      //    B = fillZeroInt(A, B);
+      //    A = fillZeroDec(B, A);
+      //    B = fillZeroDec(A, B);
+      //    result = calMinus(A,B);
+      //    printf("A = %s\n",A);
+      //    printf("B = %s\n",B);
+      //    printf("result = %s\n",result);
+      //    A = result;
+      //    memset(B, 0, len+1);
+      //    p++;
+      // }
+      // else if (*p == '/') {
+      //    i = pop();
+      //    push(pop() / i);
+      //    p++;
+      // }
+      else {
+         i = 0;
+         p++;
+      }
+   } 
+   //return pop();
+   printf("result = %s\n",result);
+   free(A);
+   free(B);
+   free(result);
+}
