@@ -130,18 +130,18 @@ char* cal_multiply(char *a, char *b) {  // 곱셈
    int cnt = 0;
    int nflag = 0;
    char one ;
-   char *result = malloc(sizeof(char)*strlen(a)*strlen(b));
+   char *result = (char*)calloc(strlen(a)*strlen(b), sizeof(char));
    char *ptr;
-   char *answer = malloc(sizeof(char)*strlen(a)*strlen(b));
-   char *temp = malloc(sizeof(char)*strlen(a)*strlen(b));
-   char *temp2 = malloc(sizeof(char)*strlen(a)*strlen(b));
-   char *temp3 = malloc(sizeof(char)*strlen(a)*strlen(b));
-   char *temp4 = malloc(sizeof(char)*strlen(a)*strlen(b));
-    char* temp_a = malloc(sizeof(char)*strlen(a)*strlen(b));
-    char* temp_b = malloc(sizeof(char)*strlen(a)*strlen(b));
-   char *negative = malloc(sizeof(char)*strlen(a)*strlen(b));
-   char *c = malloc(sizeof(char)*strlen(a)*strlen(b));
-   char *d = malloc(sizeof(char)*strlen(a)*strlen(b));
+   char *answer =(char*)calloc(strlen(a)*strlen(b), sizeof(char));
+   char *temp = (char*)calloc(strlen(a)*strlen(b), sizeof(char));
+   char *temp2 = (char*)calloc(strlen(a)*strlen(b), sizeof(char));
+   char *temp3 = (char*)calloc(strlen(a)*strlen(b), sizeof(char));
+   char *temp4 = (char*)calloc(strlen(a)*strlen(b), sizeof(char));
+    char* temp_a = (char*)calloc(strlen(a)*strlen(b), sizeof(char));
+    char* temp_b = (char*)calloc(strlen(a)*strlen(b), sizeof(char));
+   char *negative = (char*)calloc(strlen(a)*strlen(b), sizeof(char));
+   char *c = (char*)calloc(strlen(a)*strlen(b), sizeof(char));
+   char *d = (char*)calloc(strlen(a)*strlen(b), sizeof(char));
 
 
    result = strchr(a,'.');
@@ -206,13 +206,13 @@ char* cal_multiply(char *a, char *b) {  // 곱셈
          answer[j] = one;
       }
       if(sum>0) answer[j] = sum+48;
-      if(answer[0] == 'X') {
+      if(answer[0] == '0') {
         strncpy(temp,answer+1,strlenA+cnt+1);
         strcpy(answer,temp);
         //printf("%sanswer:\n",answer );
       }
       if(count==0) {
-        strcpy(temp_a, temp2);
+        //strcpy(temp_a, temp2);
         strcpy(temp_a, answer);
         temp2 = temp_a;
 //        strcpy(temp2,answer);
@@ -223,6 +223,7 @@ char* cal_multiply(char *a, char *b) {  // 곱셈
       cnt++;
       count++;
       sum = 0;
+      //memset(answer,'X',sizeof(char)*strlen(a)*strlen(b));
       for(k = 0; k < strlenA; k++, c++) continue;
   }
   if(dot==0){
@@ -236,13 +237,13 @@ char* cal_multiply(char *a, char *b) {  // 곱셈
     }
     return temp2;
   } else {
-      strcpy(temp_b, temp2);
+      //strcpy(temp_b, temp2);
       strcpy(temp_b, add_dot(temp2, dot));
       temp2 = temp_b;
 //    strcpy(temp2,add_dot(temp2,dot));
       printf("%s\n",temp2 );
       
-      strcpy(temp_a, temp2);
+      //strcpy(temp_a, temp2);
       strcpy(temp_a, remove_zero(temp2));
       temp2 = temp_a;
 //    strcpy(temp2,remove_zero(temp2));
@@ -265,7 +266,7 @@ char* cal_multiply(char *a, char *b) {  // 곱셈
     }
 }  // end cal_multiply()
 char* mul_add(char *a, char *b){
-    char *temp_a = (char*)calloc(sizeof(char) , (strlen(a)+1)*strlen(b));
+  char *temp_a = (char*)calloc(sizeof(char) , (strlen(a)+1)*strlen(b));
   if(strlen(a)>strlen(b)){
     int i = 0;
     int sum = 0;
@@ -273,7 +274,7 @@ char* mul_add(char *a, char *b){
     int len = strlen(a)+1;
     int lenA = strlen(a);
     int lenB = strlen(b);
-    char *temp = malloc(sizeof(char)*lenA*lenB);
+    char *temp = (char*)calloc(sizeof(char) , lenA*lenB);
     temp[len] = '\0';
     len--;
 
@@ -320,7 +321,7 @@ char* mul_add(char *a, char *b){
     int len = strlen(b)+1;
     int lenA = strlen(a);
     int lenB = strlen(b);
-    char *temp = malloc(sizeof(char)*lenA*lenB);
+    char *temp = (char*)calloc(lenA*lenB, sizeof(char));
     temp[len] = '\0';
     len--;
 
@@ -370,7 +371,8 @@ char* mul_add(char *a, char *b){
     int lenA = strlen(a);
     int lenB = strlen(b);
 
-    char *temp = malloc(sizeof(char)*lenA*lenB);
+    char *temp = (char*)calloc(lenA*lenB, sizeof(char));
+
     temp[len] = '\0';
     len--;
 
@@ -405,10 +407,10 @@ char* mul_add(char *a, char *b){
 char* remove_dot(char *str){
     int cnt = 0,len = strlen(str);
     char *ptr;
-    char *a = malloc(sizeof(char)*len);
-    char *b = malloc(sizeof(char)*len);
-    char *c = malloc(sizeof(char)*len);
-    char *temp = malloc(sizeof(char)*len);
+    char *a = (char*)calloc(len, sizeof(char));
+    char *b = (char*)calloc(len, sizeof(char));
+    char *c = (char*)calloc(len, sizeof(char));
+    char *temp = (char*)calloc(len, sizeof(char));
     strcpy(a,str);
     ptr = strtok(a, ".");
     while(ptr != NULL ){
@@ -426,8 +428,9 @@ char* remove_dot(char *str){
 char* add_dot(char *str,int dot){
     int i;
     int len2 = strlen(str);
-    char *answer = malloc(sizeof(char)*len2);
-    char *temp = malloc(sizeof(char)*len2);
+    char *answer = (char*)calloc(len2, sizeof(char));
+    char *temp = (char*)calloc(len2, sizeof(char));
+
     strcpy(answer,str);
     int len = strlen(answer);
     temp[len] = '\0';
@@ -448,9 +451,10 @@ char* add_dot(char *str,int dot){
 char* remove_zero(char* str){
   int count = 0,dotlen = 0,dotcnt = 0,i = 0;
   int len = strlen(str);
-  char *temp = malloc(sizeof(char)*len*2);
-  char *temp2 = malloc(sizeof(char)*len*2);
-  char *result = malloc(sizeof(char)*len*2);
+  char *temp = (char*)calloc(len*2, sizeof(char));
+  char *temp2 = (char*)calloc(len*2, sizeof(char));
+  char *result = (char*)calloc(len*2, sizeof(char));
+
   strcpy(temp,str);
   if(str[0]=='0') {
     while(1){
