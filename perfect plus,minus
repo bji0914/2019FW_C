@@ -62,7 +62,6 @@ char* cal_plus(char *A, char *B) {  // 덧셈
         oneA = *a - 48;  // ASCII 값 중 0~9로 위치하도록 보정
         oneB = *b - 48;
         sum = oneA + oneB;  // 덧셈 수행
-        printf("Line %d oneA : %d , oneB : %d \n", __LINE__, oneA, oneB);
         if (carry) {  // 지난 덧셈에서 carry가 있을 경우 sum에 carry를 더함
             sum += carry;
             carry = 0;  // carry 사용 후 0으로 초기화
